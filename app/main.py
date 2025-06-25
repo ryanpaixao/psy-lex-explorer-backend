@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import search, concepts, recommend
+from app.api import search
 from app.core.config import settings
 
 app = FastAPI(
@@ -10,11 +10,12 @@ app = FastAPI(
 
 # Register API routers
 app.include_router(search.router, prefix="/api/search")
-app.include_router(concepts.router, prefix="/api/concepts")
-app.include_router(recommend.router, prefix="/api/recommend")
+# app.include_router(concepts.router, prefix="/api/concepts")
+# app.include_router(recommend.router, prefix="/api/recommend")
 
 @app.on_event("startup")
 async def startup_event():
-    from app.services.ml_models import load_embedding_model
     # Preload ML models during startup
+    from app.services.ml_models import load_embedding_model
     load_embedding_model()
+    print("Application startup complete")
