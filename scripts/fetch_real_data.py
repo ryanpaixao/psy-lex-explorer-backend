@@ -14,9 +14,19 @@ import time
 def fetch_psychology_glossary():
     """Fetch psychology glossary from GitHub"""
     try:
-        url = "https://raw.githubusercontent.com/dylan-profiler/glossary-of-psychology-terms/main/glossary.json"
-        response = requests.get(url)
+        # Original url - url = "https://raw.githubusercontent.com/dylan-profiler/glossary-of-psychology-terms/main/glossary.json"
+        # Alt url - url = "https://raw.githubusercontent.com/psychology-lexicon/psychology-lexicon/main/glossary.json"
+        url = "https://raw.githubusercontent.com/eddienko/psychology_terms_eng/master/psychology_terms.json"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        # Inspect the response content
+        print(f"Response status: {response.status_code}")
+        print(f"First 100 characters: {response.text[:100]}")
+
+        # Attempt to parse JSON
         glossary = response.json()
+        print(f"Successfully parsed {len(glossary)} glossary terms")
 
         return [
             f"{term}: {definition}"
