@@ -1,11 +1,10 @@
 import json
 import numpy as np
-from pathlib import Path
 from app.core.config import settings
 
 def load_psychology_data():
     """Load psychology concepts and precomuted embeddings"""
-    data_path = Path(settings.DATA_PATH) / "psychology_concetps.json"
+    data_path = settings.DATA_PATH / "psychology_concetps.json"
 
     if not data_path.exists():
         # Create sample data if none exists
@@ -36,7 +35,6 @@ def create_sample_data():
         item["embedding"] = get_embedding(item["text"]).tolist()
 
     # Save sample data
-    settings.DATA_PATH.mkdir(parents=True, exist_ok=True)
     with open(settings.DATA_PATH / "psychology_concepts.json", "w") as f:
         json.dump(sample_data, f, indent=2)
 

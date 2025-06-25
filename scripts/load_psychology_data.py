@@ -1,6 +1,10 @@
 import json
-import requests
+import sys
 from pathlib import Path
+
+# Add parent directory to path to enable app imports
+sys.path.append(str(Path(__file__).parent.parent))
+                
 from app.core.config import settings
 from app.services.embeddings import get_embedding
 
@@ -29,7 +33,6 @@ def main():
         })
 
     # Save to file
-    settings.DATA_PATH.mkdir(parents=True, exist_ok=True)
     output_path = settings.DATA_PATH / "psychology_concepts.json"
 
     with open(output_path, "w") as f:
