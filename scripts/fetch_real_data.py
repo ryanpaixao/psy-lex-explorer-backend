@@ -1,69 +1,86 @@
-import json
-import requests
-import csv
+import sys
+import os
 from pathlib import Path
+
+# Add parent directory to path to enable app imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from app.core.config import settings
 from app.data.preprocess import clean_text
+import json
+import requests
 import time
 
 def fetch_psychology_glossary():
     """Fetch psychology glossary from GitHub"""
-    url = "https://raw.githubusercontent.com/dylan-profiler/glossary-of-psychology-terms/main/glossary.json"
-    response = requests.get(url)
-    glossary = response.json()
+    try:
+        url = "https://raw.githubusercontent.com/dylan-profiler/glossary-of-psychology-terms/main/glossary.json"
+        response = requests.get(url)
+        glossary = response.json()
 
-    return [
-        f"{term}: {definition}"
-        for term, definition in glossary.items()
-    ]
+        return [
+            f"{term}: {definition}"
+            for term, definition in glossary.items()
+        ]
+    except Exception as e:
+        print(f"Error fetching glossary: {str(e)}")
+        return []
 
 def fetch_openalex_psychology_abstracts(max_results=500):
     """Fetch psychology paper abstracts from OpenAlex"""
-    base_url = "https://api.openalex.org/works"
-    params = {
-        "filter": "concepts.id:C71924100", # Psychology concept ID
-        "per-page": 200,
-        "select": "id,title,abstract,publication_year"
-    }
+    try:
+        base_url = "https://api.openalex.org/works"
+        params = {
+            "filter": "concepts.id:C71924100", # Psychology concept ID
+            "per-page": 200,
+            "select": "id,title,abstract,publication_year"
+        }
 
-    papers = []
-    page = 1
-    while len(papers) < max_results:
-        params["page"] = page
-        response = requests.get(base_url, params=params)
-        if response.status_code != 200:
-            print(f"Error fetching page {page}: {response.status_code}")
-            break
+        papers = []
+        page = 1
+        while len(papers) < max_results:
+            params["page"] = page
+            response = requests.get(base_url, params=params)
+            if response.status_code != 200:
+                print(f"Error fetching page {page}: {response.status_code}")
+                break
 
-        data = response.json()
-        results = data.get("results", [])
-        if not results:
-            break
+            data = response.json()
+            results = data.get("results", [])
+            if not results:
+                break
 
-        for work in results:
-            if work.get("abstract"):
-                papers.append({
-                    "text": f"{work['title']}, {clean_text(work['abstract'])}",
-                    "source": "OpenAlex",
-                    "year": work.get("publication_year")
-                })
+            for work in results:
+                if work.get("abstract"):
+                    papers.append({
+                        "text": f"{work['title']}, {clean_text(work['abstract'])}",
+                        "source": "OpenAlex",
+                        "year": work.get("publication_year")
+                    })
 
-        print(f"Fetched {len(papers)} papers so far...")
-        page += 1
-        time.sleep(0.3) # Respect API rate limits
+            print(f"Fetched {len(papers)} papers so far...")
+            page += 1
+            time.sleep(0.3) # Respect API rate limits
 
-    return [paper["text"] for paper in papers]
+        return [paper["text"] for paper in papers]
+    except Exception as e:
+        print(f"Error fetching OpenAlex data: {str(e)}")
+        return []
 
 def fetch_cognitive_atlas_concepts():
     """Fetch Cognitive Atlas concepts"""
-    url = "https://www.cognitiveatlas.org/api/v-alpha/concepts"
-    response = requests.get(url)
-    concepts = response.json()
+    try:
+        url = "https://www.cognitiveatlas.org/api/v-alpha/concepts"
+        response = requests.get(url)
+        concepts = response.json()
 
-    return [
-        f"{concept['name']}: {concept['definition_text']}"
-        for concept in concepts
-    ]
+        return [
+            f"{concept['name']}: {concept['definition_text']}"
+            for concept in concepts
+        ]
+    except Exception as e:
+        print(f"Error fetching Cognitive Atlas: {str(e)}")
+        return []
 
 def main():
     # Fetch data from multiple sources
