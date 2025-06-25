@@ -16,7 +16,7 @@ class SearchResult(BaseModel):
 class SearchResponse(BaseModel):
     results: list[SearchResult]
 
-@router.post("/", response_model=SearchResponse)
+@router.post("", response_model=SearchResponse)
 async def search_endpoint(request: SearchRequest):
     try:
         results = await semantic_search(request.query, request.top_k)
