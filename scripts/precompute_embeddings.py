@@ -1,13 +1,20 @@
+import sys
+import os
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import json
 import numpy as np
-from pathlib import Path
 from tqdm import tqdm
+from sentence_transformers import SentenceTransformer
 from app.core.config import settings
-from app.services.embeddings import get_embedding
 from app.data.preprocess import clean_text
 
 def main():
-    # Load the raw data
+    # Load model
+    model = SentenceTransformer(settings.EMBEDDING_MODEL)
+
+    # Load the data
     data_path = settings.DATA_PATH / "psychology_concepts.json"
     with open(data_path, "r") as f:
         data = json.load(f)
@@ -17,6 +24,8 @@ def main():
     # Clean text and compute embeddings
     for item in tqdm(data, desc="Computing embeddings"):
         item["text"] = clean_text(item["text"]).tolist()
+        embedding = model.encode([item["text"]])[0]
+        item["embedding"] = embedding.tolist()
 
     # Save with embeddings
     with open(data_path, "w") as f:
