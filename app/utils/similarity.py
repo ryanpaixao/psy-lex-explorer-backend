@@ -9,10 +9,10 @@ def find_similar_items(
 ) -> list[dict]:
     """Find top_k similar items using cosine similarity"""
     # Calclulate cosine similarity
-    similarities = cosine_similarity(query_embedding.reshape(1, -1), embeddings)[0]
+    similarities = cosine_similarity([query_embedding], embeddings)[0]
 
     # Get top indices
-    top_indices = similarities.argsort()[::-1][:top_k]
+    top_indices = np.argsort(similarities)[::-1][:top_k]
 
     # Format results
     return [
